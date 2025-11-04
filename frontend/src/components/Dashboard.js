@@ -1,18 +1,30 @@
+/**
+ * Dashboard Component
+ * ===================
+ * Visualizes bias analysis results using Chart.js
+ * Displays fairness scores, performance comparisons, and mitigation recommendations
+ *
+ * @component
+ * @param {Object} results - Bias analysis data from backend API
+ * @param {Function} onApplyMitigation - Callback to apply mitigation strategies
+ * @param {boolean} loading - Loading state for mitigation application
+ * @param {boolean} compact - Compact view mode for before/after comparison
+ */
+
 import React from 'react';
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  PointElement
+  CategoryScale,    // X-axis scale for bar charts
+  LinearScale,      // Y-axis scale for bar charts
+  BarElement,       // Bar chart elements
+  Title,            // Chart titles
+  Tooltip,          // Interactive tooltips
+  Legend,           // Chart legends
+  ArcElement        // Doughnut/pie chart elements
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 
-// Register ChartJS components
+// Register required ChartJS components for Bar and Doughnut charts
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -20,64 +32,94 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement,
-  PointElement
+  ArcElement
 );
 
+/**
+ * Dashboard component for displaying bias analysis results
+ */
 const Dashboard = ({ results, onApplyMitigation, loading, compact = false }) => {
+  // Don't render if no results available
   if (!results) return null;
 
+  /**
+   * Returns color based on fairness score
+   * @param {number} score - Fairness score (0-100)
+   * @returns {string} Hex color code
+   */
   const getScoreColor = (score) => {
-    if (score >= 80) return '#16a34a';
-    if (score >= 60) return '#f59e0b';
-    return '#dc2626';
+    if (score >= 80) return '#16a34a'; // Green for fair
+    if (score >= 60) return '#f59e0b'; // Orange for borderline
+    return '#dc2626'; // Red for biased
   };
 
+  /**
+   * Returns status label and CSS class based on score
+   * @param {number} score - Fairness score (0-100)
+   * @returns {Object} Label and className for UI display
+   */
   const getScoreStatus = (score) => {
     if (score >= 80) return { label: 'Fair', className: 'fair' };
     if (score >= 60) return { label: 'Borderline', className: 'borderline' };
     return { label: 'Biased', className: 'biased' };
   };
 
+  /**
+   * Returns badge style based on metric value
+   * Used for color-coding accuracy, TPR, and precision metrics
+   * @param {number} value - Metric value (0-1 scale)
+   * @returns {string} CSS class name ('good', 'medium', or 'poor')
+   */
   const getMetricBadge = (value) => {
-    if (value >= 0.80) return 'good';
-    if (value >= 0.65) return 'medium';
-    return 'poor';
+    if (value >= 0.80) return 'good';    // 80%+ is good
+    if (value >= 0.65) return 'medium';  // 65-80% is medium
+    return 'poor';                        // Below 65% is poor
   };
 
-  // Prepare data for group comparison chart
+  /**
+   * Prepare data for group comparison bar chart
+   * Extract performance metrics for each demographic group
+   */
   const groupNames = Object.keys(results.groups);
-  const accuracies = groupNames.map(g => results.groups[g].accuracy * 100);
-  const tprs = groupNames.map(g => results.groups[g].tpr * 100);
-  const precisions = groupNames.map(g => results.groups[g].precision * 100);
+  const accuracies = groupNames.map(g => results.groups[g].accuracy * 100);    // Convert to percentage
+  const tprs = groupNames.map(g => results.groups[g].tpr * 100);               // True Positive Rate
+  const precisions = groupNames.map(g => results.groups[g].precision * 100);   // Precision
 
+  /**
+   * Bar chart configuration - shows three metrics per demographic group
+   * Blue: Accuracy, Green: TPR, Orange: Precision
+   */
   const barChartData = {
     labels: groupNames,
     datasets: [
       {
         label: 'Accuracy %',
         data: accuracies,
-        backgroundColor: 'rgba(37, 99, 235, 0.7)',
+        backgroundColor: 'rgba(37, 99, 235, 0.7)',    // Blue
         borderColor: 'rgba(37, 99, 235, 1)',
         borderWidth: 2
       },
       {
         label: 'True Positive Rate %',
         data: tprs,
-        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+        backgroundColor: 'rgba(16, 185, 129, 0.7)',   // Green
         borderColor: 'rgba(16, 185, 129, 1)',
         borderWidth: 2
       },
       {
         label: 'Precision %',
         data: precisions,
-        backgroundColor: 'rgba(245, 158, 11, 0.7)',
+        backgroundColor: 'rgba(245, 158, 11, 0.7)',   // Orange
         borderColor: 'rgba(245, 158, 11, 1)',
         borderWidth: 2
       }
     ]
   };
 
+  /**
+   * Bar chart display options
+   * Configures axis scales, tooltips, and visual appearance
+   */
   const barChartOptions = {
     responsive: true,
     maintainAspectRatio: true,
@@ -95,6 +137,7 @@ const Dashboard = ({ results, onApplyMitigation, loading, compact = false }) => 
       },
       tooltip: {
         callbacks: {
+          // Format tooltip to show percentage with 1 decimal place
           label: function(context) {
             return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`;
           }
@@ -104,17 +147,20 @@ const Dashboard = ({ results, onApplyMitigation, loading, compact = false }) => 
     scales: {
       y: {
         beginAtZero: true,
-        max: 100,
+        max: 100, // Y-axis goes from 0-100%
         ticks: {
           callback: function(value) {
-            return value + '%';
+            return value + '%'; // Add % symbol to y-axis labels
           }
         }
       }
     }
   };
 
-  // Bias score doughnut chart
+  /**
+   * Doughnut chart configuration - displays overall fairness score
+   * Uses dynamic coloring based on score threshold
+   */
   const scoreStatus = getScoreStatus(results.overall_score);
   const doughnutData = {
     labels: ['Bias Score', 'Remaining'],
@@ -122,24 +168,28 @@ const Dashboard = ({ results, onApplyMitigation, loading, compact = false }) => 
       {
         data: [results.overall_score, 100 - results.overall_score],
         backgroundColor: [
-          getScoreColor(results.overall_score),
-          '#e2e8f0'
+          getScoreColor(results.overall_score), // Dynamic color based on score
+          '#e2e8f0' // Gray for remaining portion
         ],
-        borderWidth: 0
+        borderWidth: 0 // No borders for cleaner look
       }
     ]
   };
 
+  /**
+   * Doughnut chart display options
+   * Creates hollow center (cutout: 70%) for displaying numeric score
+   */
   const doughnutOptions = {
     responsive: true,
     maintainAspectRatio: true,
-    cutout: '70%',
+    cutout: '70%', // Creates hollow center for score display
     plugins: {
       legend: {
-        display: false
+        display: false // Hide legend, showing only visual representation
       },
       tooltip: {
-        enabled: false
+        enabled: false // Disable tooltips for cleaner UI
       }
     }
   };

@@ -1,17 +1,36 @@
+/**
+ * FairMed - Main Application Component
+ * =====================================
+ * Entry point for the FairMed bias detection interface.
+ * Manages state for scenario selection, API communication, and results display.
+ *
+ * @author Rafael Ribeiro
+ */
+
 import React, { useState } from 'react';
 import './App.css';
 import Dashboard from './components/Dashboard';
 import axios from 'axios';
 
+// Backend API endpoint - Flask server running on port 5001
 const API_URL = 'http://localhost:5001/api';
 
+/**
+ * Main App component managing the entire FairMed interface
+ * @returns {JSX.Element} The complete FairMed application
+ */
 function App() {
-  const [selectedScenario, setSelectedScenario] = useState('dermatology');
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState(null);
-  const [mitigatedResults, setMitigatedResults] = useState(null);
-  const [showComparison, setShowComparison] = useState(false);
+  // State management for application
+  const [selectedScenario, setSelectedScenario] = useState('dermatology'); // Current scenario selection
+  const [loading, setLoading] = useState(false); // Loading state during API calls
+  const [results, setResults] = useState(null); // Original bias analysis results
+  const [mitigatedResults, setMitigatedResults] = useState(null); // Results after applying mitigation
+  const [showComparison, setShowComparison] = useState(false); // Toggle before/after view
 
+  /**
+   * Pre-configured medical AI scenarios demonstrating different types of bias
+   * Each scenario represents a real-world bias pattern found in medical AI systems
+   */
   const scenarios = [
     {
       id: 'dermatology',
@@ -33,44 +52,57 @@ function App() {
     }
   ];
 
+  /**
+   * Initiates bias analysis for the selected scenario
+   * Makes POST request to /api/analyze endpoint with scenario parameters
+   * @async
+   */
   const handleAnalyze = async () => {
+    // Reset state for new analysis
     setLoading(true);
     setResults(null);
     setMitigatedResults(null);
     setShowComparison(false);
 
     try {
-      // Simulate processing time for demo effect
+      // Simulate processing time for realistic demo experience (1.5 seconds)
       await new Promise(resolve => setTimeout(resolve, 1500));
 
+      // Request bias analysis from Flask backend
       const response = await axios.post(`${API_URL}/analyze`, {
         scenario: selectedScenario,
-        use_sample: true
+        use_sample: true // Use pre-loaded demo data
       });
 
       setResults(response.data);
     } catch (error) {
       console.error('Error analyzing bias:', error);
-      alert('Error connecting to backend. Make sure Flask server is running on port 5000.');
+      alert('Error connecting to backend. Make sure Flask server is running on port 5001.');
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Applies bias mitigation techniques and retrieves improved results
+   * Makes POST request to /api/mitigate endpoint
+   * @async
+   */
   const handleApplyMitigation = async () => {
     setLoading(true);
 
     try {
-      // Simulate retraining time
+      // Simulate model retraining time for realistic demo (2 seconds)
       await new Promise(resolve => setTimeout(resolve, 2000));
 
+      // Request mitigated results from Flask backend
       const response = await axios.post(`${API_URL}/mitigate`, {
         scenario: selectedScenario,
-        mitigation: 'adversarial_debiasing'
+        mitigation: 'adversarial_debiasing' // Mitigation strategy
       });
 
       setMitigatedResults(response.data);
-      setShowComparison(true);
+      setShowComparison(true); // Show before/after comparison
     } catch (error) {
       console.error('Error applying mitigation:', error);
       alert('Error applying mitigation. Please try again.');

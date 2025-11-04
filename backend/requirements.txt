@@ -1,2 +1,5 @@
+# Flask Web Framework - Core backend framework for REST API
 flask>=3.0.0
+
+# Flask CORS Extension - Enables Cross-Origin Resource Sharing for frontend communication
 flask-cors>=4.0.0
