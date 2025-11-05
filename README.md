@@ -369,7 +369,6 @@ I'm actively seeking opportunities in **software engineering** or **AI/ML develo
 - **LinkedIn**: https://linkedin.com/in/raphahribs
 - **GitHub**: ravalenr
 - **Email**: raphahribs@icloud.com
-- **Portfolio**: [Your Portfolio Website]
 
 **Available for:**
 - Full-time software engineering roles
