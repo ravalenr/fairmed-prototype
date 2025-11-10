@@ -117,15 +117,23 @@ Ensure you have installed:
 
 ### Quick Start
 
-#### Step 1: Start Backend Server
+#### Step 1: Start Backend Server (Python/Flask)
 
 Open a terminal and run:
 
 ```bash
 cd fairmed-prototype/backend
+
+# Create virtual environment (only needed first time)
 python3 -m venv venv
+
+# Activate virtual environment
 source venv/bin/activate          # On Windows: venv\Scripts\activate
+
+# Install dependencies (only needed first time or when requirements change)
 pip install -r requirements.txt
+
+# Start the Flask server
 python3 app.py
 ```
 
@@ -141,19 +149,32 @@ Health Check: http://localhost:5001/api/health
 
 **Keep this terminal running.**
 
-#### Step 2: Start Frontend Server
+**Note:** If you've already set up the backend before, you only need:
+```bash
+cd fairmed-prototype/backend
+source venv/bin/activate
+python3 app.py
+```
+
+#### Step 2: Start Frontend Server (React)
 
 Open a **new terminal** and run:
 
 ```bash
 cd fairmed-prototype/frontend
+
+# Install dependencies (only needed first time or when package.json changes)
 npm install
+
+# Start the React development server
 npm start
 ```
 
 The application will automatically open in your browser at **http://localhost:3000**
 
 If it doesn't open automatically, manually visit: http://localhost:3000
+
+**Note:** After the first setup, you only need `npm start` to start the frontend
 
 #### Step 3: Demo the Application
 
@@ -165,15 +186,34 @@ If it doesn't open automatically, manually visit: http://localhost:3000
 
 ### Troubleshooting
 
+**Backend won't start:**
+- Make sure you're in the `backend` directory: `cd fairmed-prototype/backend`
+- Verify virtual environment is activated (you should see `(venv)` in your terminal prompt)
+- If activation fails, recreate the virtual environment: `rm -rf venv && python3 -m venv venv`
+- Check Python version: `python3 --version` (needs 3.8+)
+- Try running directly: `./venv/bin/python3 app.py`
+
+**Frontend won't start:**
+- Make sure you're in the `frontend` directory: `cd fairmed-prototype/frontend`
+- Check Node version: `node --version` (needs 16+)
+- Clear npm cache if needed: `npm cache clean --force && rm -rf node_modules && npm install`
+- If port 3000 is busy, React will offer to use another port (press Y)
+
 **Port Conflicts:**
 - Backend uses port 5001 (macOS AirPlay uses 5000)
 - Frontend uses port 3000
-- If ports are occupied, check running processes: `lsof -i :5001` or `lsof -i :3000`
+- Check running processes: `lsof -i :5001` or `lsof -i :3000`
+- Kill process if needed: `kill -9 <PID>` (replace <PID> with the process ID from lsof)
 
 **API Connection Issues:**
-- Ensure both servers are running
-- Check browser console for CORS errors
+- Ensure both servers are running (you should have 2 terminal windows open)
 - Verify backend health: `curl http://localhost:5001/api/health`
+- Check browser console (F12) for CORS or network errors
+- Make sure frontend is configured to use http://localhost:5001 (check `src/App.js`)
+
+**"Module not found" errors:**
+- Backend: Make sure virtual environment is activated and run `pip install -r requirements.txt`
+- Frontend: Delete `node_modules` folder and run `npm install` again
 
 ---
 
