@@ -174,7 +174,7 @@ function App() {
 
         {/* Scenario Selection */}
         <div className="scenario-selector">
-          <h2>Select Medical AI Scenario</h2>
+          <h2>Select Your Medical Scenario</h2>
           <div className="scenario-buttons">
             {scenarios.map(scenario => (
               <button
